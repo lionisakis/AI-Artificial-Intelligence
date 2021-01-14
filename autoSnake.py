@@ -1,5 +1,13 @@
 import tkinter
 import random
+import time
+
+RIGHT = "RIGHT"
+LEFT = "LEFT"
+DOWN = "DOWN"
+UP = "UP"
+NONE = "NONE"
+DIRACTIONS=[RIGHT,LEFT,DOWN,UP,NONE]
 class GameWord:
     def __init__(self):
         self.top = tkinter.Tk()
@@ -17,6 +25,8 @@ class GameWord:
         self.inGame=True
         self.begin=True
         self.flag=False
+        self.tails=[]
+        self.listDiraction=[LEFT,DOWN,LEFT,UP]
 
     def border(self):
         for i in range(0,self.width):
@@ -55,7 +65,7 @@ class GameWord:
 
     def checkCollisions(self):
         x,y=self.snake
-        if x<=20 or x>=self.width-20 or y<=20 or y>=self.height-20:
+        if x<20 or x>=self.width-20 or y<20 or y>=self.height-20:
             self.inGame=False
             return
         
@@ -85,33 +95,24 @@ class GameWord:
         self.flag=False
 
     def moveSnake(self):
-        
+
+        def directionToVector(action):
+            if action==UP:
+                return(0,-20)
+            elif action==DOWN:
+                return(0,+20)
+            elif action==RIGHT:
+                return(+20,0)
+            elif action==LEFT:
+                return(-20,0)
+
         def moveBody(x,y,flag):
             sx,sy=self.snake
             if(flag):
                 self.w.create_rectangle(sx,sy,sx+20,sy+20,fill="blue",outline="black",tag="tail")
+                self.tails.append((sx,sy))
             self.w.create_rectangle(sx+x,sy+y,sx+x+20,sy+y+20,fill="blue",outline="red",tag="snake")
             self.snake=(sx+x,sy+y)
-
-
-        def up_keypress(event):
-            if(self.diraction!=1):
-                self.diraction=0
-
-
-        def down_keypress(event):
-            if(self.diraction!=0):
-                self.diraction=1
-
-
-        def right_keypress(event):
-            if(self.diraction!=3):
-                self.diraction=2
-
-
-        def left_keypress(event):
-            if(self.diraction!=2):
-                self.diraction=3
 
 
         def deletePrevious():
@@ -120,24 +121,20 @@ class GameWord:
             tougther=self.w.find_withtag("tail")
             if(tougther!=()):
                 self.w.delete(tougther[0])
+                if self.tails!=[]:
+                    self.tails.pop(0)
                 return True
             return False
+
         
-        self.top.bind("<Left>", left_keypress)
-        self.top.bind("<Down>", down_keypress)
-        self.top.bind("<Right>", right_keypress)
-        self.top.bind("<Up>", up_keypress)
+        if self.listDiraction!=[]:
+            self.diraction=directionToVector(self.listDiraction[0])
+            self.listDiraction.pop(0)
+            flag=deletePrevious()
+            x,y=self.diraction
+            moveBody(x,y,flag)
 
-
-        flag=deletePrevious()
-        if self.diraction==0:
-            moveBody(0,-20,flag)
-        elif self.diraction==1:
-            moveBody(0,+20,flag)
-        elif self.diraction==2:
-            moveBody(+20,0,flag)
-        elif self.diraction==3:
-            moveBody(-20,0,flag)
+        
 
     def printScore(self):
         self.scoreText="Score: " + str(self.score)
@@ -145,16 +142,94 @@ class GameWord:
         self.w.create_text(50,10,fill="white",text=self.scoreText,tag="score")
         self.w.tag_raise("score")
 
+    def getSnake(self):
+        return self.snake
+    def getFood(self):
+        return self.foodPosition
+    def getTail(self):
+        return self.tails
 
-    def play(self):
+    def play(self,diraction):
+        self.listDiraction=diraction
         self.checkCollisions()
         self.printScore()
-        
+        if(self.listDiraction==[]):
+            return 0
         if self.inGame:
             self.moveSnake()
-            self.top.after(150, self.play)
+            time.sleep(0.1)
+            self.top.update()
+            return 1
         else:
             self.top.destroy()
+            return -1        
+    def getHeight(self):
+        return self.height
+    def getWidth(self):
+        return self.width
+    def update(self):
+        self.top.update()
+class Problem:
+    def __init__(self,food,head,tails,height,width):
+        self.head=head
+        self.tails=tails
+        self.width=width
+        self.height=height
+        self.food=food
         
-    def loop(self):
-        self.top.mainloop()
+    def isGoalState(self,state):
+        x,y=state
+        return x==y
+
+    def getStartState(self):
+        return (self.head,self.food)
+    
+    def getSuccessors(self,state):
+        def directionToVector(action):
+            if action==UP:
+                return(0,-20)
+            elif action==DOWN:
+                return(0,+20)
+            elif action==RIGHT:
+                return(+20,0)
+            elif action==LEFT:
+                return(-20,0)
+
+        successors = []
+        for action in [RIGHT,LEFT,DOWN,UP]:
+            position,goals=state
+            x,y = position
+            dx, dy = directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            nextTails=[]
+            flag=False
+            for xTails,yTails in self.tails:
+                if nextx==int(xTails+dx) and nexty==int(yTails+dy):
+                    flag=True
+                else:
+                    nextTails.append((int(xTails+dx),int(yTails+dy)))
+            if flag:
+                continue
+            if not(nextx<20 or nextx>=self.width-20 or nexty<20 or nexty>=self.height-20):
+                newSnake=(nextx,nexty)
+                q=(newSnake,self.food)
+                successors.append( ( q, action,1) )
+        return successors
+class World:
+    def __init__(self,search):        
+        game = GameWord()
+        game.border()
+        game.addFood()
+        game.spawnSnake()
+        solution=-2
+        theSolution=[]
+        while(solution!=-1):
+            if(solution==0):         
+                problem=Problem(game.getFood(),game.getSnake(),game.getTail(),game.getHeight(),game.getWidth())
+                theSolution=search(problem)
+            
+            solution=game.play(theSolution)
+            if(solution==0):
+                game.update()
+
+
