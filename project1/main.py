@@ -1,9 +1,7 @@
 from autoSnake import World,heuristic
 from snake import GameWord
 import sys
-from searchAlgorithms import depthFirstSearch
-from searchAlgorithms import breadthFirstSearch
-from searchAlgorithms import uniformCostSearch
+from searchAlgorithms import depthFirstSearch,breadthFirstSearch,uniformCostSearch
 from searchAlgorithms import aStarSearch
 
 
