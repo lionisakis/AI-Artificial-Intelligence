@@ -43,17 +43,17 @@ def depthFirstSearch(problem):
     # The way with we will get the next value 
     stack=util.Stack() 
 
-    start= problem.getStartState()
+    start,tail= problem.getStartState()
     
     # Starting values for our Maps
     dist[start]=0
     prev[start]= None
     direc[start]=None
-    stack.push(start)  
+    stack.push((start,tail))  
 
     current=start
     while stack.isEmpty()==False:
-        current = stack.pop()
+        current,tail = stack.pop()
 
         # If we have seen them go to next
         if current in Current.keys():
@@ -67,17 +67,17 @@ def depthFirstSearch(problem):
             break
 
         # Find the successors and put them to see them
-        successors= problem.getSuccessors(current)
+        successors= problem.getSuccessors(current,tail)
         for i in range(0,len(successors)):
             stateSuccessor,directionSuccessor,cost=successors[i]
-        
+            state,tails=stateSuccessor
             # If we have seen it skip it
-            if stateSuccessor in list(Current.keys()):
+            if state in list(Current.keys()):
                 continue
 
             # Put the values in the maps
-            prev[stateSuccessor]=current
-            direc[stateSuccessor]=directionSuccessor
+            prev[state]=current
+            direc[state]=directionSuccessor
             stack.push(stateSuccessor)
 
 
@@ -106,17 +106,17 @@ def breadthFirstSearch(problem):
     # The way with we will get the next value 
     queue=util.Queue() 
 
-    start= problem.getStartState()
+    start,tail= problem.getStartState()
     
     # Starting values for our Maps
     dist[start]=0
     prev[start]= None
     direc[start]=None
-    queue.push(start)  
+    queue.push((start,tail))  
 
     current=start
     while queue.isEmpty()==False:
-        current = queue.pop()
+        current,tail = queue.pop()
 
         # If we have seen them go to next
         if current in Current.keys():
@@ -127,22 +127,21 @@ def breadthFirstSearch(problem):
 
         # See if it is the Goal
         if problem.isGoalState(current)==True:
-            print (1)
             break
 
         # Find the successors and put them to see them
-        successors= problem.getSuccessors(current)
+        successors= problem.getSuccessors(current,tail)
         for i in range(0,len(successors)):
             stateSuccessor,directionSuccessor,cost=successors[i]
-        
+            x,y=stateSuccessor
             # If we have seen it skip it
-            if stateSuccessor in Current.keys():
+            if x in Current.keys():
                 continue
 
             # Put the values in the maps if we have not seen them 
-            if stateSuccessor not in prev.keys():
-                prev[stateSuccessor]=current
-                direc[stateSuccessor]=directionSuccessor
+            if x not in prev.keys():
+                prev[x]=current
+                direc[x]=directionSuccessor
                 queue.push(stateSuccessor)
 
 
@@ -177,18 +176,18 @@ def uniformCostSearch(problem):
     pq=util.PriorityQueue()
 
     # Starting values for our Maps
-    start= problem.getStartState()
+    start,tail= problem.getStartState()
     dist[start]=0
     prev[start]= None
     direc[start]=None
-    pq.push(start,0)  
+    pq.push((start,tail),0)  
 
     current=start
     while pq.isEmpty()==False:
 
 
         # Tell we have see them
-        current = pq.pop()
+        current,tail = pq.pop()
 
         # If we have seen them go to next
         if current in Current.keys():
@@ -203,36 +202,37 @@ def uniformCostSearch(problem):
             break
         
         # Find the successors and put them to see them
-        successors= problem.getSuccessors(current)
+        successors= problem.getSuccessors(current,tail)
         for i in range(0,len(successors)):
             stateSuccessor,directionSuccessor,cost=successors[i]
 
+            state,tail=stateSuccessor
 
             # If we have seen them go to next
-            if stateSuccessor in Current.keys():
+            if state in Current.keys():
                 continue
 
             # Check if we have already check it cost so far
-            if stateSuccessor  in dist.keys():
+            if state  in dist.keys():
                 alt = dist[current] + cost
 
                 # If the new cost path is less than the previous
                 # replace everything with the new path
-                if  alt < dist[stateSuccessor]:
-                    dist[stateSuccessor]=alt
-                    prev[stateSuccessor]=current
-                    direc[stateSuccessor]=directionSuccessor
-                    pq.update(stateSuccessor,dist[stateSuccessor])
+                if  alt < dist[state]:
+                    dist[state]=alt
+                    prev[state]=current
+                    direc[state]=directionSuccessor
+                    pq.update(stateSuccessor,dist[state])
 
             else:
 
                 # We have not see this node again so put everything again
          
                 alt = dist[current] + cost
-                dist[stateSuccessor]=alt
-                prev[stateSuccessor]=current
-                direc[stateSuccessor]=directionSuccessor
-                pq.push(stateSuccessor,dist[stateSuccessor])
+                dist[state]=alt
+                prev[state]=current
+                direc[state]=directionSuccessor
+                pq.push(stateSuccessor,dist[state])
 
     # Check if the current value is the goal
     # and not because we run out of nodes to explore
@@ -261,17 +261,17 @@ def aStarSearch(problem, heuristic):
     pq=util.PriorityQueue()      
     
     # Starting values for our Maps
-    start= problem.getStartState()
+    start,tail= problem.getStartState()
     dist[start]=0
     prev[start]= None
     direc[start]=None
-    pq.push(start,0)  
+    pq.push((start,tail),0)  
 
 
     fcost[start]=0
     current=start
     while pq.isEmpty()==False:
-        current = pq.pop()
+        current,tail = pq.pop()
 
         # If we have seen them go to next
         if current in Current.keys():
@@ -287,40 +287,40 @@ def aStarSearch(problem, heuristic):
 
          
         # Find the successors and put them to see them
-        successors= problem.getSuccessors(current)
+        successors= problem.getSuccessors(current,tail)
         for i in range(0,len(successors)):
             stateSuccessor,directionSuccessor,cost=successors[i]         
 
-            
+            state,tail=stateSuccessor
             # If we have seen them go to next
-            if stateSuccessor in Current.keys():
+            if state in Current.keys():
                 continue
             
             # We cuclulate the new cost path with the new nodes
-            hCost = heuristic(stateSuccessor,problem)
+            hCost = heuristic(state,problem)
             gCost = dist[current] + cost
             fCost = hCost+gCost
             
             # Check if we have already check it cost so far
-            if stateSuccessor  in fcost.keys() :
+            if state  in fcost.keys() :
                 
                 # If the new cost path is less than the previous
                 # replace everything with the new path
-                if(fCost < fcost[stateSuccessor]):
-                    dist[stateSuccessor]=gCost
-                    prev[stateSuccessor]=current
-                    direc[stateSuccessor]=directionSuccessor
+                if(fCost < fcost[state]):
+                    dist[state]=gCost
+                    prev[state]=current
+                    direc[state]=directionSuccessor
 
-                    fcost[stateSuccessor]=fCost
+                    fcost[state]=fCost
                     pq.update(stateSuccessor,fCost)
 
             else:
                 # We have not see this node again so put everything again
-                dist[stateSuccessor]=gCost
-                prev[stateSuccessor]=current
-                direc[stateSuccessor]=directionSuccessor
+                dist[state]=gCost
+                prev[state]=current
+                direc[state]=directionSuccessor
 
-                fcost[stateSuccessor]=fCost
+                fcost[state]=fCost
                 pq.push(stateSuccessor,fCost)
     
     # Check if the current value is the goal

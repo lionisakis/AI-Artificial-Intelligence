@@ -1,4 +1,4 @@
-from autoSnake import World
+from autoSnake import World,heuristic
 from snake import GameWord
 import sys
 from searchAlgorithms import depthFirstSearch
@@ -13,11 +13,12 @@ if len(sys.argv)!=1:
         World(depthFirstSearch)
     elif string=="bfs":
         World(breadthFirstSearch)
-    elif string=="uCS":
+    elif string=="ucs":
         World(uniformCostSearch)
-    elif string=="aSS":
-        World(aStarSearch)
+    elif string=="ass":
+        World(aStarSearch,heuristic)
 else:
+    print(1)
     game = GameWord()
     game.border()
     game.addFood()

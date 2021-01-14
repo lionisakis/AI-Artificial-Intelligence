@@ -1,6 +1,7 @@
 import tkinter
 import random
 import time
+import util
 
 RIGHT = "RIGHT"
 LEFT = "LEFT"
@@ -46,13 +47,36 @@ class GameWord:
 
     def addFood(self):
         if self.Food ==False:
-            x,y=self.snake
-            x=random.randint(20,self.width-20)
-            while x%20!=0:
-                x=random.randint(10,260)
-            y=random.randint(20,self.height-20)
-            while y%20!=0:
-                y=random.randint(10,220)
+            xsnake,ysnake=self.snake
+            x,y=(xsnake,ysnake)
+            flag=False
+            # this while is to not have the same space as with a tail
+            while True:
+                # this while is to not have the same space with the head
+                while True:
+                    x=random.randint(20,self.width-22)
+                    while x%20!=0:
+                        x=random.randint(20,self.width-22)
+                    y=random.randint(20,self.height-22)
+                    while y%20!=0:
+                        y=random.randint(20,self.height-22)
+                    # end while
+                    if (x,y)!=(xsnake,ysnake):
+                       break
+                # reset the flag to true
+                flag=False
+                for i in self.tails:
+                    position,flag2=i
+                    # see if there is a common space 
+                    if position==(x,y):
+                        flag=True
+                        break
+                # there is no tail 
+                if self.tails==[]:
+                    break
+                # there is no common space
+                if  not flag:
+                    break       
             Position=x+1,y+1,x+19,y+19
             self.foodPosition=(x,y)
             self.w.create_rectangle(Position, fill="green", outline = 'green',tag="food")
@@ -69,15 +93,12 @@ class GameWord:
             self.inGame=False
             return
         
-        theSnake=self.w.find_withtag("snake")[0]
-        for i in self.w.find_withtag("tail"):
-            if x==0:
-                x=1
-                continue
-            if self.w.coords(i)==self.w.coords(theSnake) and i!=theSnake and self.flag:
+        theSnake=self.snake
+        for i in range(len(self.tails)):
+            position,flag=self.tails[i]
+            if flag and position==theSnake:
                 self.inGame=False
-                return
-            x+=2
+                return  
         if self.snake==self.foodPosition:
             x,y=self.foodPosition
             Position=x+1,y+1,x+19,y+19
@@ -90,9 +111,9 @@ class GameWord:
         self.flag=True
 
     def spawnTail(self):
-        x,y=self.snake
-        self.w.create_rectangle(x,y,x+20,y+20,fill="blue",outline="black",tag="tail")
-        self.flag=False
+        if(self.diraction!=0):
+            self.tails.append((self.snake,False))
+            self.flag=False
 
     def moveSnake(self):
 
@@ -110,19 +131,27 @@ class GameWord:
             sx,sy=self.snake
             if(flag):
                 self.w.create_rectangle(sx,sy,sx+20,sy+20,fill="blue",outline="black",tag="tail")
-                self.tails.append((sx,sy))
+                self.tails.append(((sx,sy),True))
             self.w.create_rectangle(sx+x,sy+y,sx+x+20,sy+y+20,fill="blue",outline="red",tag="snake")
             self.snake=(sx+x,sy+y)
+            for i in range(len(self.tails)):
+                position,flag=self.tails[i]
+                if flag==False:
+                    x,y=position
+                    self.w.create_rectangle(x,y,x+20,y+20,fill="blue",outline="black",tag="tail")
+                    self.tails.pop(i)
+                    self.tails.append((position,True))
+                    break
 
 
         def deletePrevious():
             tougther=self.w.find_withtag("snake")
-            self.w.delete(tougther[0])
+            self.w.delete(tougther[0])         
+            
             tougther=self.w.find_withtag("tail")
             if(tougther!=()):
                 self.w.delete(tougther[0])
-                if self.tails!=[]:
-                    self.tails.pop(0)
+                self.tails.pop(0)
                 return True
             return False
 
@@ -135,7 +164,6 @@ class GameWord:
             moveBody(x,y,flag)
 
         
-
     def printScore(self):
         self.scoreText="Score: " + str(self.score)
         self.w.delete("score")
@@ -147,7 +175,10 @@ class GameWord:
     def getFood(self):
         return self.foodPosition
     def getTail(self):
-        return self.tails
+        tail=[]
+        for i in self.tails:
+            tail.append(i)
+        return tail
 
     def play(self,diraction):
         self.listDiraction=diraction
@@ -161,6 +192,7 @@ class GameWord:
             self.top.update()
             return 1
         else:
+            print("ERROR",self.snake,self.tails)
             self.top.destroy()
             return -1        
     def getHeight(self):
@@ -170,21 +202,25 @@ class GameWord:
     def update(self):
         self.top.update()
 class Problem:
-    def __init__(self,food,head,tails,height,width):
+    def __init__(self,food,head,tails,height,width,game):
         self.head=head
         self.tails=tails
         self.width=width
         self.height=height
         self.food=food
+        self.game=game
         
     def isGoalState(self,state):
         x,y=state
         return x==y
 
     def getStartState(self):
-        return (self.head,self.food)
+        return ((self.head,self.food),self.tails)
     
-    def getSuccessors(self,state):
+    def heuristic(self,state):
+        return util.manhattanDistance(state,self.food)
+
+    def getSuccessors(self,state,tail):
         def directionToVector(action):
             if action==UP:
                 return(0,-20)
@@ -194,29 +230,33 @@ class Problem:
                 return(+20,0)
             elif action==LEFT:
                 return(-20,0)
-
         successors = []
         for action in [RIGHT,LEFT,DOWN,UP]:
             position,goals=state
             x,y = position
             dx, dy = directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
-            nextTails=[]
             flag=False
-            for xTails,yTails in self.tails:
-                if nextx==int(xTails+dx) and nexty==int(yTails+dy):
+            for i in range(len(tail)):
+                position,flag2=tail[i]
+                if (nextx,nexty)==position and flag2!=False:
                     flag=True
-                else:
-                    nextTails.append((int(xTails+dx),int(yTails+dy)))
+                    break
             if flag:
                 continue
             if not(nextx<20 or nextx>=self.width-20 or nexty<20 or nexty>=self.height-20):
                 newSnake=(nextx,nexty)
-                q=(newSnake,self.food)
+                nextTails=tail
+                if len(nextTails)!=0:
+                    nextTails.pop(0)
+                    nextTails.append(((x,y),True))
+                print(newSnake,nextTails)
+                q=((newSnake,self.food),nextTails)
                 successors.append( ( q, action,1) )
         return successors
 class World:
-    def __init__(self,search):        
+
+    def __init__(self,search,heuristic=None):        
         game = GameWord()
         game.border()
         game.addFood()
@@ -225,11 +265,16 @@ class World:
         theSolution=[]
         while(solution!=-1):
             if(solution==0):         
-                problem=Problem(game.getFood(),game.getSnake(),game.getTail(),game.getHeight(),game.getWidth())
-                theSolution=search(problem)
-            
+                problem=Problem(game.getFood(),game.getSnake(),game.getTail(),game.getHeight(),game.getWidth(),game)
+                if heuristic==None:
+                    theSolution=search(problem)
+                else:
+                    theSolution=search(problem,heuristic)
             solution=game.play(theSolution)
             if(solution==0):
                 game.update()
 
 
+def heuristic(state,problem):
+    x,y=state
+    return problem.heuristic(x)
