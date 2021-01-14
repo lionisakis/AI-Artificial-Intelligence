@@ -35,7 +35,6 @@ def depthFirstSearch(problem):
     """
     "*** YOUR CODE HERE ***"
 
-    Current={} # a Map in which we saw which nodes we have seen
     dist={}  # The distance so far for that node
     prev={}  # The previous node for knowing the path
     direc={}  # The way we got to the current node
@@ -55,11 +54,10 @@ def depthFirstSearch(problem):
     while stack.isEmpty()==False:
         current,tail = stack.pop()
 
-        # Tell we have see the node
-        Current[current]=1
-
         # See if it is the Goal
         if problem.isGoalState(current)==True:
+            problem.removeFinalOutline()
+            problem.addFinalOutline(tail)
             break
 
         # Find the successors and put them to see them
@@ -67,9 +65,6 @@ def depthFirstSearch(problem):
         for i in range(0,len(successors)):
             stateSuccessor,directionSuccessor,cost=successors[i]
             state,tails=stateSuccessor
-            # If we have seen it skip it
-            if state in list(Current.keys()):
-                continue
 
             # Put the values in the maps
             prev[state]=current
@@ -94,7 +89,6 @@ def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
 
-    Current={} # a Map in which we saw which nodes we have seen
     dist={}  # The distance so far for that node
     prev={}  # The previous node for knowing the path
     direc={}  # The way we got to the current node
@@ -114,11 +108,10 @@ def breadthFirstSearch(problem):
     while queue.isEmpty()==False:
         current,tail = queue.pop()
 
-        # Tell we have see the node
-        Current[current]=1
-
         # See if it is the Goal
         if problem.isGoalState(current)==True:
+            problem.removeFinalOutline()
+            problem.addFinalOutline(tail)
             break
 
         # Find the successors and put them to see them
@@ -126,9 +119,6 @@ def breadthFirstSearch(problem):
         for i in range(0,len(successors)):
             stateSuccessor,directionSuccessor,cost=successors[i]
             x,y=stateSuccessor
-            # If we have seen it skip it
-            if x in Current.keys():
-                continue
 
             # Put the values in the maps if we have not seen them 
             if x not in prev.keys():
@@ -159,7 +149,6 @@ def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
     
-    Current={}     # a Map in which we saw which nodes we have seen 
     dist={}  # The distance so far for that node
     prev={}  # The previous node for knowing the path
     direc={}  # The way we got to the current node
@@ -181,13 +170,10 @@ def uniformCostSearch(problem):
         # Tell we have see them
         current,tail = pq.pop()
 
-
-        # We say that we saw it
-        Current[current]=1
-
-
         # See if it is the Goal
         if problem.isGoalState(current)==True:
+            problem.removeFinalOutline()
+            problem.addFinalOutline(tail)
             break
         
         # Find the successors and put them to see them
@@ -236,7 +222,6 @@ def aStarSearch(problem, heuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
 
-    Current={}     # a Map in which we hace seen 
     dist={}  # The distance so far for that node
     prev={}  # The previous node for knowing the path
     direc={}  # The way we got to the current node
@@ -257,16 +242,12 @@ def aStarSearch(problem, heuristic):
     current=start
     while pq.isEmpty()==False:
         current,tail = pq.pop()
-        problem.remove()
-        problem.addwall(tail)
 
-        
-        # We say that we saw it
-        Current[current]=1
 
-       
         # See if it is the Goal
         if problem.isGoalState(current)==True:
+            problem.removeFinalOutline()
+            problem.addFinalOutline(tail)
             break
 
          

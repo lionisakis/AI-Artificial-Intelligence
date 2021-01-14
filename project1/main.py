@@ -9,14 +9,17 @@ from searchAlgorithms import aStarSearch
 
 if len(sys.argv)!=1:
     string=str(sys.argv[1])
+    speed=0.1
+    if len(sys.argv)!=2:
+        speed=int(sys.argv[2])
     if string=="dfs":
-        World(depthFirstSearch)
+        World(depthFirstSearch,speed)
     elif string=="bfs":
-        World(breadthFirstSearch)
+        World(breadthFirstSearch,speed)
     elif string=="ucs":
-        World(uniformCostSearch)
+        World(uniformCostSearch,speed)
     elif string=="ass":
-        World(aStarSearch,heuristic)
+        World(aStarSearch,speed,heuristic)
 else:
     print(1)
     game = GameWord()
