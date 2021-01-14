@@ -1,4 +1,4 @@
-# AI #
+# AI-Artificial-Intelligence #
 
 ## This repository has many projects that are based use some sort of Artificial intelligence to solve some problems ##
 
