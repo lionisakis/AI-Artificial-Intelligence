@@ -136,11 +136,10 @@ class GameWord:
             self.snake=(sx+x,sy+y)
             for i in range(len(self.tails)):
                 position,flag=self.tails[i]
-                if flag==False:
-                    x,y=position
-                    self.w.create_rectangle(x,y,x+20,y+20,fill="blue",outline="black",tag="tail")
+                if not flag:
+                    self.w.create_rectangle(sx,sy,sx+20,sy+20,fill="blue",outline="black",tag="tail")
                     self.tails.pop(i)
-                    self.tails.append((position,True))
+                    self.tails.append(((sx,sy),True))
                     break
 
 
@@ -169,6 +168,14 @@ class GameWord:
         self.w.delete("score")
         self.w.create_text(50,10,fill="white",text=self.scoreText,tag="score")
         self.w.tag_raise("score")
+
+    def addWall(self,sx,sy):
+        self.w.create_rectangle(sx,sy,sx+20,sy+20,outline="White",tag="wall")
+    def removeWall(self):
+        tougther=self.w.find_withtag("wall")
+        for i in range(len(tougther)):
+            self.w.delete(tougther[i])         
+
 
     def getSnake(self):
         return self.snake
@@ -220,6 +227,16 @@ class Problem:
     def heuristic(self,state):
         return util.manhattanDistance(state,self.food)
 
+    def addwall(self,tail):
+        for i in range (len(tail)):
+            position,flag=tail[i]
+            if flag:
+                x,y=position
+                self.game.addWall(x,y)
+        self.game.update()
+    def remove(self):
+        self.game.removeWall()
+
     def getSuccessors(self,state,tail):
         def directionToVector(action):
             if action==UP:
@@ -236,6 +253,7 @@ class Problem:
             x,y = position
             dx, dy = directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
+            nextTails=[]
             flag=False
             for i in range(len(tail)):
                 position,flag2=tail[i]
@@ -244,13 +262,22 @@ class Problem:
                     break
             if flag:
                 continue
+            
             if not(nextx<20 or nextx>=self.width-20 or nexty<20 or nexty>=self.height-20):
                 newSnake=(nextx,nexty)
-                nextTails=tail
+                for i in tail:
+                    nextTails.append(i)
+                for i in range(len(nextTails)):
+                    position,flag=nextTails[i]
+                    if flag==False:
+                        x,y=position
+                        nextTails.pop(i)
+                        nextTails.append((position,True))
+                        break
+
                 if len(nextTails)!=0:
                     nextTails.pop(0)
-                    nextTails.append(((x,y),True))
-                print(newSnake,nextTails)
+                    nextTails.append((newSnake,True))
                 q=((newSnake,self.food),nextTails)
                 successors.append( ( q, action,1) )
         return successors

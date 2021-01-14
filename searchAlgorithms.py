@@ -55,10 +55,6 @@ def depthFirstSearch(problem):
     while stack.isEmpty()==False:
         current,tail = stack.pop()
 
-        # If we have seen them go to next
-        if current in Current.keys():
-            continue
-        
         # Tell we have see the node
         Current[current]=1
 
@@ -118,10 +114,6 @@ def breadthFirstSearch(problem):
     while queue.isEmpty()==False:
         current,tail = queue.pop()
 
-        # If we have seen them go to next
-        if current in Current.keys():
-            continue
-        
         # Tell we have see the node
         Current[current]=1
 
@@ -189,9 +181,6 @@ def uniformCostSearch(problem):
         # Tell we have see them
         current,tail = pq.pop()
 
-        # If we have seen them go to next
-        if current in Current.keys():
-            continue
 
         # We say that we saw it
         Current[current]=1
@@ -207,10 +196,6 @@ def uniformCostSearch(problem):
             stateSuccessor,directionSuccessor,cost=successors[i]
 
             state,tail=stateSuccessor
-
-            # If we have seen them go to next
-            if state in Current.keys():
-                continue
 
             # Check if we have already check it cost so far
             if state  in dist.keys():
@@ -272,10 +257,9 @@ def aStarSearch(problem, heuristic):
     current=start
     while pq.isEmpty()==False:
         current,tail = pq.pop()
+        problem.remove()
+        problem.addwall(tail)
 
-        # If we have seen them go to next
-        if current in Current.keys():
-            continue
         
         # We say that we saw it
         Current[current]=1
@@ -292,9 +276,6 @@ def aStarSearch(problem, heuristic):
             stateSuccessor,directionSuccessor,cost=successors[i]         
 
             state,tail=stateSuccessor
-            # If we have seen them go to next
-            if state in Current.keys():
-                continue
             
             # We cuclulate the new cost path with the new nodes
             hCost = heuristic(state,problem)
