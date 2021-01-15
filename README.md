@@ -1,6 +1,6 @@
 # AI-Artificial-Intelligence #
 
-## This repository has many projects that are based use some sort of Artificial intelligence to solve some problems ##
+## This repository has many projects that use some sort of Artificial intelligence to solve some problems ##
 
 ### Project 1 \ Snake Game ###
 - - - -
