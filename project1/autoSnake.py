@@ -353,6 +353,8 @@ class World:
             solution=game.play(theSolution)
             if(solution!=0):
                 times=0
+            else:
+                times+=1
 
 def heuristic(state,problem):
     x,y=state
