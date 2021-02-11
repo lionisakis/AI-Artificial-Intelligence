@@ -10,14 +10,14 @@ UP = "UP"
 NONE = "NONE"
 DIRACTIONS=[RIGHT,LEFT,DOWN,UP,NONE]
 class GameWord:
-    def __init__(self,speed):
+    def __init__(self,size,speed):
         self.speed=speed
         self.top = tkinter.Tk()
-        self.width=300
-        self.height=300
+        self.width=size
+        self.height=size
         self.score=0
         self.scoreText="Score: " + str(self.score)
-        self.w= tkinter.Canvas(self.top, bg="black", height=self.height, width=self.width)
+        self.w= tkinter.Canvas(self.top, bg="black", height=self.height, width=self.width+20)
         self.scoreLabel = self.w.create_text(50,10,fill="white",text=self.scoreText,tag="score")
         self.w.tag_raise("score")
         self.Food= False
@@ -33,16 +33,16 @@ class GameWord:
     def border(self):
         # make the vertical border
         for i in range(0,self.width):
-            theBorder=i,0,i+19,17
+            theBorder=i,0,i+20,18
             self.w.create_rectangle(theBorder,fill="purple",outline="purple",tag="border")
-            theBorder=i,self.height-20,i+19,self.height
+            theBorder=i,self.height-18,i+20,self.height
             self.w.create_rectangle(theBorder,fill="purple",outline="purple",tag="border")
 
         #  make the orizontal border
         for i in range(-3,self.height):
-            theBorder=0,i,19,i+19
+            theBorder=0,i,18,i+20
             self.w.create_rectangle(theBorder,fill="purple",outline="purple",tag="border")
-            theBorder=self.width-20,i+280,self.width,i+19
+            theBorder=self.width+2,i+self.height,self.width+20,i+20
             self.w.create_rectangle(theBorder,fill="purple",outline="purple",tag="border")
         self.w.pack()
         self.w.tag_raise("score")
@@ -95,7 +95,7 @@ class GameWord:
     def checkCollisions(self):
         x,y=self.snake
         # check if the snake is out of the border
-        if x<20 or x>=self.width-20 or y<20 or y>=self.height-20:
+        if x<20 or x>=self.width or y<20 or y>=self.height:
             self.inGame=False
             return
         
@@ -320,11 +320,32 @@ class Problem:
                 successors.append( ( q, action,1) )
         
         return successors
+
+from searchAlgorithms import Graph
 class World:
 
-    def __init__(self,search,speed=0.1,heuristic=None):        
+    def __init__(self,search,speed=0.1,heuristic=None,flag=False):        
+        def pathCycle(path,snake):
+            previous=None
+            diractions=[]
+            previous = snake
+            current=path[snake]
+            while current!=snake:
+                xp,yp=previous
+                xc,yc=current
+                if xc==xp-20:
+                    diractions.append(LEFT)
+                elif xc==xp+20:
+                    diractions.append(RIGHT)
+                elif yc==yp-20:
+                    diractions.append(UP)
+                elif yc==yp+20:
+                    diractions.append(DOWN)
+                previous=current
+                current=path[previous]
+            return diractions
         # create the world
-        game = GameWord(speed)
+        game = GameWord(300,speed)
         game.border()
         game.addFood()
         game.spawnSnake()
@@ -334,15 +355,25 @@ class World:
         # time variable is to cheack if the
         # algorithm cannot find a solution
         times=0
+        if flag:
+            graph=Graph(int((game.getHeight())),int((game.getWidth())),game)
+            flag2=graph.hamCycle((20,20))
+
         while(solution!=-1):
 
             if(solution==0):         
                 # find a the path
-                problem=Problem(game.getFood(),game.getSnake(),game.getTail(),game.getHeight(),game.getWidth(),game)
-                if heuristic==None:
-                    theSolution=search(problem)
+                if flag:
+                    if flag2:
+                        theSolution=pathCycle(graph.path,game.getSnake())
+                    else:
+                        return
                 else:
-                    theSolution=search(problem,heuristic)
+                    problem=Problem(game.getFood(),game.getSnake(),game.getTail(),game.getHeight(),game.getWidth(),game)
+                    if heuristic==None:
+                        theSolution=search(problem)
+                    else:
+                        theSolution=search(problem,heuristic)
             # there is no path so end the game
             if theSolution==[] and times!=0:
                 time.sleep(0.2)
