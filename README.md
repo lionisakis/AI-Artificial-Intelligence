@@ -5,5 +5,5 @@
 ### Project 1 \ Snake Game ###
 - - - -
 
-   This project creates a snake game. That game can be played either by the user or the computer. The computer solves this problem by using Search Algorithms (BFS,DFS,UCS,A*). Those solutions can be not perfect as the snake can trap itself. Language: Python
+   This project creates a snake game. That game can be played either by the user or the computer. The computer solves this problem by using Search Algorithms (BFS,DFS,UCS,A*,Normal Hamiltonian Cycle). Some solutions can not be perfect as the snake can trap itself. Language: Python
    
