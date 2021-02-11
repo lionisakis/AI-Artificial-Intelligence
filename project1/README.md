@@ -1,7 +1,7 @@
 Author: Lionis Emmanouil Georgios (Akis)
 
 ### Summery of the program:
-  This project creates a snake game. That game can be played either by the user or by the computer. The computer solves this problem by using Search Algorithms (BFS,DFS,UCS,A*,normal Hamiltonian Cycle). Language: Python
+  This project creates a snake game. That game can be played either by the user or by the computer. The computer solves this problem by using Search Algorithms (BFS,DFS,UCS,A*,Normal Hamiltonian Cycle). Some solutions can not be perfect as the snake can trap itself. Language: Python
  
 ### How to compile the programm:
   The execution of the programm is easy. You just have to write `python main.py {searchAlgorithm} {speed}` or `python3 main.py {searchAlgorithm} {speed}`
@@ -13,7 +13,7 @@ Author: Lionis Emmanouil Georgios (Akis)
 - *bfs* (Breath Fisrt Search)
 - *ucs* (Uniform Cost Search)
 - *ass* (A Star Search, A*)
-- *nhc* (normal Hamiltonian Cycle)
+- *nhc* (Normal Hamiltonian Cycle)
 - *___*    (With no argument then the user plays the game. **NOTE: the speed argument has to be missing to work**
 
    speed:
