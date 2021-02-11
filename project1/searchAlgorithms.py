@@ -299,3 +299,84 @@ def aStarSearch(problem, heuristic):
 
     else:
         return []
+
+class Graph():  
+    def __init__(self, verticesX,verticesY,game):  
+        self.VX = verticesX-20
+        self.VY = verticesX-20
+        self.game=game
+        self.path=[]
+        self.start=(20,20)  
+  
+    def hamCycleUtil(self, path, pos):  
+  
+        if pos == self.start:  
+            return True
+
+        x,y=pos
+        x=int(x)
+        y=int(y)
+        theNextPoint =self.nextPoints(pos)[-1]
+        path[pos] = theNextPoint 
+        if self.hamCycleUtil(path, theNextPoint) == True:  
+            return True
+        return False
+  
+    def nextPoints(self,point):
+        queue=[]
+        v1,v2=point
+        # begin
+        if (v1,v2)==(20,20):
+            queue.append((20,40))
+            return queue
+        # the top line 
+        elif v2==20:
+            queue.append((v1-20,v2))
+            return queue
+        # the last line
+        elif v1==self.VX:
+            queue.append((v1,v2-20))
+            return queue
+        # when to go right
+        elif int(v1/10)%4==0 and v2==40:
+            queue.append((v1+20,v2))
+            return queue
+        # when to go up
+        elif int(v1/10)%4==2 and v2==40:
+            queue.append((v1,v2+20))
+            return queue
+        # when to go down
+        elif int(v1/10)%4==2 and v2!=self.VY-20:
+            queue.append((v1,v2+20))
+            return queue
+        # when to go up
+        elif int(v1/10)%4==0 and v2!=self.VY-20:
+            queue.append((v1,v2-20))
+            return queue
+        # when to go right
+        elif v2==self.VY-20 and int(v1/10)%4==2:
+            queue.append((v1+20,v2))
+            return queue
+        # when to go up
+        elif v2==self.VY-20 and int(v1/10)%4==0:
+            queue.append((v1,v2-20))
+            return queue
+        return queue
+    
+
+    def hamCycle(self,begin):  
+        self.start=begin
+        self.path={}
+        for i in self.nextPoints(begin):
+            self.path[begin] = i 
+            if self.hamCycleUtil(self.path,i)==True:  
+                return True
+        print ("Solution does not exist\n")   
+        return False
+  
+    def printSolution(self, path):  
+        print ("Solution Exists: Following", 
+                 "is one Hamiltonian Cycle") 
+        for vertex in path:  
+            print (vertex, end = " ") 
+        print (path[0], "\n") 

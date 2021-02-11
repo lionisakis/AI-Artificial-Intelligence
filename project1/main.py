@@ -18,9 +18,11 @@ if len(sys.argv)!=1:
         World(uniformCostSearch,speed)
     elif string=="ass":
         World(aStarSearch,speed,heuristic)
+    elif string=="nhc":
+        World(aStarSearch,speed,heuristic,True)
+        
 else:
-    print(1)
-    game = GameWord()
+    game = GameWord(300)
     game.border()
     game.addFood()
     game.spawnSnake()
