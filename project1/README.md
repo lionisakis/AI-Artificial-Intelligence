@@ -16,7 +16,8 @@ Author: Lionis Emmanouil Georgios (Akis)
 - *nhc* (Normal Hamiltonian Cycle)
 - *___*    (With no argument then the user plays the game. **NOTE: the speed argument has to be missing to work**
 
-   speed:
+  
+  speed:
    
 - *number* (So the game goes according to that speed)
 - *___* (If the argument is missing then it is set to 0.1) 
