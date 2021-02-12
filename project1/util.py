@@ -97,3 +97,24 @@ class PriorityQueueWithFunction(PriorityQueue):
 def manhattanDistance( xy1, xy2 ):
     "Returns the Manhattan distance between points xy1 and xy2"
     return abs( xy1[0] - xy2[0] ) + abs( xy1[1] - xy2[1] )
+
+
+def giveDiraction(x1,y1,x2,y2):
+    if x1==x2-20:
+        return "LEFT"
+    elif x1==x2+20:
+        return "RIGHT"
+    elif y1==y2-20:
+        return "UP"
+    elif y1==y2+20:
+        return "DOWN"
+
+def takeDiraction(diraction):
+    if diraction=="UP":
+        return(0,-20)
+    elif diraction=="DOWN":
+        return(0,+20)
+    elif diraction=="RIGHT":
+        return(+20,0)
+    elif diraction=="LEFT":
+        return(-20,0)

@@ -28,10 +28,6 @@ def depthFirstSearch(problem):
 
     To get started, you might want to try some of these simple commands to
     understand the search problem that is being passed in:
-
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
 
@@ -301,82 +297,108 @@ def aStarSearch(problem, heuristic):
         return []
 
 class Graph():  
-    def __init__(self, verticesX,verticesY,game):  
+    def __init__(self, verticesX,verticesY,game,problem,heuristic):  
         self.VX = verticesX-20
         self.VY = verticesX-20
         self.game=game
-        self.path=[]
-        self.start=(20,20)  
-  
-    def hamCycleUtil(self, path, pos):  
-  
-        if pos == self.start:  
-            return True
-
-        x,y=pos
-        x=int(x)
-        y=int(y)
-        theNextPoint =self.nextPoints(pos)[-1]
-        path[pos] = theNextPoint 
-        if self.hamCycleUtil(path, theNextPoint) == True:  
-            return True
-        return False
-  
-    def nextPoints(self,point):
-        queue=[]
-        v1,v2=point
-        # begin
-        if (v1,v2)==(20,20):
-            queue.append((20,40))
-            return queue
-        # the top line 
-        elif v2==20:
-            queue.append((v1-20,v2))
-            return queue
-        # the last line
-        elif v1==self.VX:
-            queue.append((v1,v2-20))
-            return queue
-        # when to go right
-        elif int(v1/10)%4==0 and v2==40:
-            queue.append((v1+20,v2))
-            return queue
-        # when to go up
-        elif int(v1/10)%4==2 and v2==40:
-            queue.append((v1,v2+20))
-            return queue
-        # when to go down
-        elif int(v1/10)%4==2 and v2!=self.VY-20:
-            queue.append((v1,v2+20))
-            return queue
-        # when to go up
-        elif int(v1/10)%4==0 and v2!=self.VY-20:
-            queue.append((v1,v2-20))
-            return queue
-        # when to go right
-        elif v2==self.VY-20 and int(v1/10)%4==2:
-            queue.append((v1+20,v2))
-            return queue
-        # when to go up
-        elif v2==self.VY-20 and int(v1/10)%4==0:
-            queue.append((v1,v2-20))
-            return queue
-        return queue
-    
-
-    def hamCycle(self,begin):  
-        self.start=begin
         self.path={}
-        for i in self.nextPoints(begin):
-            self.path[begin] = i 
-            if self.hamCycleUtil(self.path,i)==True:  
-                return True
-        print ("Solution does not exist\n")   
-        return False
-  
-    def printSolution(self, path):  
-        print ("Solution Exists: Following", 
-                 "is one Hamiltonian Cycle") 
-        for vertex in path:  
-            print (vertex, end = " ") 
-        print (path[0], "\n") 
+        self.start=(20,20)  
+        self.heuristic=heuristic
+        self.problem=problem
+        
+        current,tail=problem.getStartState()
+        successors= problem.getSuccessors(current,tail)
+        stateSuccessor,d,_=successors[0]
+        nextc,tail=stateSuccessor
+        x,y=current
+        nx,ny=nextc
+        self.path[x]=nx
+        self.prev={}
+        current=nextc
+        see=[]
+        while True:
+            # See if it is the start
+            if problem.isGoalState(current)==True:
+                keys=self.path.keys()
+                for i in keys:
+                    if self.path[i]==current:
+                        self.prev[current]=i
+                break
+
+                
+            # Find the successors and put them to see them
+            m=-1
+            nextc=current
+            successors= problem.getSuccessors(current,tail)
+            for i in range(0,len(successors)):
+                stateSuccessor,directionSuccessor,cost=successors[i]         
+
+                state,tail=stateSuccessor
+
+                if state in see:
+                    continue
+
+                # We cuclulate the new cost path with the new nodes
+                hCost = self.heuristic(state,problem)
+                if m<hCost:
+                    m=hCost
+                    nextc=state 
+            x,y=current
+            nx,ny=nextc
+            self.path[x]=nx
+            self.prev[nx]=x
+            see.append(current)
+            current=nextc
+        self.staticPath=self.path
+        self.staticPrev=self.prev
+
+    def getDiraction(self,path,snake):
+        previous=None
+        diractions={}
+        previous = snake
+        current=path[snake]
+        while current!=snake:
+            xp,yp=previous
+            xc,yc=current
+            diractions[previous]=util.giveDiraction(xc,yc,xp,yp)
+            previous=current
+            current=path[previous]
+        diractions[previous]=util.giveDiraction(xc,yc,xp,yp)
+        return diractions
+
+    def normCycle(self,snake):
+        diraction=self.getDiraction(self.staticPath,snake)
+        return list(diraction.values())
+    
+    def repCycle(self,problem,snake,tail,food):
+        diraction=[]
+        hucCycle= self.getDiraction(self.path,snake)
+        aStar=aStarSearch(problem,self.heuristic)
+        if len(tail)>10:
+            return hucCycle
+        x,y=snake
+        current=snake
+        flag=True
+        for i in range(len(hucCycle)):
+            current=(x,y)
+            dCycle=hucCycle[current]
+            if i<len(aStar):
+                dStar= aStar[i]
+            else:
+                dStar=dCycle
+            if current==food:
+                break
+            if dCycle!=dStar :
+                x1,y1=util.takeDiraction(dStar)
+                diraction.append(dStar)
+                x+=x1
+                y+=y1
+                self.problem.change([((x,y),True)])
+            else:
+                x1,y1=util.takeDiraction(dCycle)
+                x+=x1
+                y+=y1
+                self.problem.addFinalOutline([((x,y),True)])
+                diraction.append(dCycle)
+
+        return diraction
