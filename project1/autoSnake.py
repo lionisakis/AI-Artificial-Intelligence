@@ -344,8 +344,7 @@ class World:
                     if which=="n":
                         theSolution=graph.normCycle(game.getSnake())
                     else:
-                        problem=Problem(game.getFood(),game.getSnake(),game.getTail(),game.getHeight(),game.getWidth(),game)
-                        theSolution=graph.repCycle(problem,game.getSnake(),game.getTail(),game.getFood())
+                        return 
                 else:
                     problem=Problem(game.getFood(),game.getSnake(),game.getTail(),game.getHeight(),game.getWidth(),game)
                     if heuristic==None:

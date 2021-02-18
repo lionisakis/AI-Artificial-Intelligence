@@ -369,36 +369,3 @@ class Graph():
     def normCycle(self,snake):
         diraction=self.getDiraction(self.staticPath,snake)
         return list(diraction.values())
-    
-    def repCycle(self,problem,snake,tail,food):
-        diraction=[]
-        hucCycle= self.getDiraction(self.path,snake)
-        aStar=aStarSearch(problem,self.heuristic)
-        if len(tail)>10:
-            return hucCycle
-        x,y=snake
-        current=snake
-        flag=True
-        for i in range(len(hucCycle)):
-            current=(x,y)
-            dCycle=hucCycle[current]
-            if i<len(aStar):
-                dStar= aStar[i]
-            else:
-                dStar=dCycle
-            if current==food:
-                break
-            if dCycle!=dStar :
-                x1,y1=util.takeDiraction(dStar)
-                diraction.append(dStar)
-                x+=x1
-                y+=y1
-                self.problem.change([((x,y),True)])
-            else:
-                x1,y1=util.takeDiraction(dCycle)
-                x+=x1
-                y+=y1
-                self.problem.addFinalOutline([((x,y),True)])
-                diraction.append(dCycle)
-
-        return diraction

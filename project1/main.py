@@ -20,8 +20,6 @@ if len(sys.argv)!=1:
         World(aStarSearch,speed)
     elif string=="nhc":
         World(aStarSearch,speed,True,"n")
-    elif string=="ahc":
-        World(aStarSearch,speed,True,"a")
         
 else:
     game = GameWord(300)
