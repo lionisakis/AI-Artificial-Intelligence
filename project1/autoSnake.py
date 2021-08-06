@@ -17,8 +17,8 @@ class GameWord:
         self.height=size
         self.score=0
         self.scoreText="Score: " + str(self.score)
-        self.w= tkinter.Canvas(self.top, bg="black", height=self.height, width=self.width+20)
-        self.scoreLabel = self.w.create_text(50,10,fill="white",text=self.scoreText,tag="score")
+        self.w= tkinter.Canvas(self.top, bg="black", height=self.height, width=self.width)
+        self.scoreLabel = self.w.create_text(40,10,fill="white",text=self.scoreText,tag="score")
         self.w.tag_raise("score")
         self.Food= False
         self.foodPosition=(0,0)
@@ -33,16 +33,16 @@ class GameWord:
     def border(self):
         # make the vertical border
         for i in range(0,self.width):
-            theBorder=i,0,i+20,18
+            theBorder=i,0,i+15,15
             self.w.create_rectangle(theBorder,fill="purple",outline="purple",tag="border")
-            theBorder=i,self.height-18,i+20,self.height
+            theBorder=i,self.height-15,i+15,self.height
             self.w.create_rectangle(theBorder,fill="purple",outline="purple",tag="border")
 
         #  make the orizontal border
-        for i in range(-3,self.height):
-            theBorder=0,i,18,i+20
+        for i in range(0,self.height):
+            theBorder=0,i,15,i+15
             self.w.create_rectangle(theBorder,fill="purple",outline="purple",tag="border")
-            theBorder=self.width+2,i+self.height,self.width+20,i+20
+            theBorder=self.width-15,i,self.width,i+15
             self.w.create_rectangle(theBorder,fill="purple",outline="purple",tag="border")
         self.w.pack()
         self.w.tag_raise("score")
@@ -50,6 +50,7 @@ class GameWord:
 
     def addFood(self):
         if self.Food ==False:
+            time=0
             xsnake,ysnake=self.snake
             x,y=(xsnake,ysnake)
             flag=False
@@ -60,6 +61,9 @@ class GameWord:
                     x=random.randint(20,self.width-22)
                     while x%20!=0:
                         x=random.randint(20,self.width-22)
+                        time+=1
+                        if (time>1000):
+                            self.destroy()
                     y=random.randint(20,self.height-22)
                     while y%20!=0:
                         y=random.randint(20,self.height-22)
@@ -95,7 +99,7 @@ class GameWord:
     def checkCollisions(self):
         x,y=self.snake
         # check if the snake is out of the border
-        if x<20 or x>=self.width or y<20 or y>=self.height:
+        if x<20 or x>=self.width-20 or y<20 or y>=self.height-20:
             self.inGame=False
             return
         
@@ -131,18 +135,6 @@ class GameWord:
             self.flag=False
 
     def moveSnake(self):
-        
-        # convert the positions
-        def directionToVector(action):
-            if action==UP:
-                return(0,-20)
-            elif action==DOWN:
-                return(0,+20)
-            elif action==RIGHT:
-                return(+20,0)
-            elif action==LEFT:
-                return(-20,0)
-
         # move the snake
         def moveBody(x,y):
             flag2=True
@@ -177,7 +169,7 @@ class GameWord:
 
         # if there are moves        
         if self.listDiraction!=[]:
-            self.diraction=directionToVector(self.listDiraction[0])
+            self.diraction=util.takeDiraction(self.listDiraction[0])
             self.listDiraction.pop(0)
             # add the new tail and haed
             x,y=self.diraction
@@ -193,6 +185,9 @@ class GameWord:
     # add the outline of the end position of the snake
     def addWall(self,sx,sy):
         self.w.create_rectangle(sx,sy,sx+20,sy+20,outline="White",tag="wall")
+    
+    def change(self,sx,sy):
+        self.w.create_rectangle(sx,sy,sx+20,sy+20,outline="red",tag="wall")
     
     # delete the outline of the end position of the snake
     def removeWall(self):
@@ -262,27 +257,27 @@ class Problem:
                 x,y=position
                 self.game.addWall(x,y)
         self.game.update()
+    
+    def change(self,tail):
+        for i in range (len(tail)):
+            position,flag=tail[i]
+            if flag:
+                x,y=position
+                self.game.change(x,y)
+        self.game.update()
 
     def removeFinalOutline(self):
         self.game.removeWall()
 
     def getSuccessors(self,state,tail):
         # return the diractions
-        def directionToVector(action):
-            if action==UP:
-                return(0,-20)
-            elif action==DOWN:
-                return(0,+20)
-            elif action==RIGHT:
-                return(+20,0)
-            elif action==LEFT:
-                return(-20,0)
+
         successors = []
         # check all available moves
         for action in [RIGHT,LEFT,DOWN,UP]:
             position,goals=state
             x,y = position
-            dx, dy = directionToVector(action)
+            dx, dy = util.takeDiraction(action)
             nextx, nexty = int(x + dx), int(y + dy)
             nextTails=[]
             flag=False
@@ -321,31 +316,13 @@ class Problem:
         
         return successors
 
-from searchAlgorithms import Graph
+from searchAlgorithms import Graph, aStarSearch
 class World:
 
-    def __init__(self,search,speed=0.1,heuristic=None,flag=False):        
-        def pathCycle(path,snake):
-            previous=None
-            diractions=[]
-            previous = snake
-            current=path[snake]
-            while current!=snake:
-                xp,yp=previous
-                xc,yc=current
-                if xc==xp-20:
-                    diractions.append(LEFT)
-                elif xc==xp+20:
-                    diractions.append(RIGHT)
-                elif yc==yp-20:
-                    diractions.append(UP)
-                elif yc==yp+20:
-                    diractions.append(DOWN)
-                previous=current
-                current=path[previous]
-            return diractions
+    def __init__(self,search,speed,flag=False,which="n"):        
+        
         # create the world
-        game = GameWord(300,speed)
+        game = GameWord(280,1/speed)
         game.border()
         game.addFood()
         game.spawnSnake()
@@ -356,21 +333,21 @@ class World:
         # algorithm cannot find a solution
         times=0
         if flag:
-            graph=Graph(int((game.getHeight())),int((game.getWidth())),game)
-            flag2=graph.hamCycle((20,20))
+            problem=Problem((20,20),(20,20),game.getTail(),game.getHeight(),game.getWidth(),game)
+            graph=Graph(int((game.getHeight())),int((game.getWidth())),game,problem,heuristic)
 
         while(solution!=-1):
 
             if(solution==0):         
                 # find a the path
                 if flag:
-                    if flag2:
-                        theSolution=pathCycle(graph.path,game.getSnake())
+                    if which=="n":
+                        theSolution=graph.normCycle(game.getSnake())
                     else:
-                        return
+                        return 
                 else:
                     problem=Problem(game.getFood(),game.getSnake(),game.getTail(),game.getHeight(),game.getWidth(),game)
-                    if heuristic==None:
+                    if search!=aStarSearch:
                         theSolution=search(problem)
                     else:
                         theSolution=search(problem,heuristic)

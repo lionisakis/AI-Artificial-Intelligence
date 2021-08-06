@@ -1,4 +1,4 @@
-from autoSnake import World,heuristic
+from autoSnake import World
 from snake import GameWord
 import sys
 from searchAlgorithms import depthFirstSearch,breadthFirstSearch,uniformCostSearch
@@ -7,9 +7,9 @@ from searchAlgorithms import aStarSearch
 
 if len(sys.argv)!=1:
     string=str(sys.argv[1])
-    speed=0.1
+    speed=5
     if len(sys.argv)!=2:
-        speed=int(sys.argv[2])
+        speed=float(sys.argv[2])
     if string=="dfs":
         World(depthFirstSearch,speed)
     elif string=="bfs":
@@ -17,9 +17,9 @@ if len(sys.argv)!=1:
     elif string=="ucs":
         World(uniformCostSearch,speed)
     elif string=="ass":
-        World(aStarSearch,speed,heuristic)
+        World(aStarSearch,speed)
     elif string=="nhc":
-        World(aStarSearch,speed,heuristic,True)
+        World(aStarSearch,speed,True,"n")
         
 else:
     game = GameWord(300)
