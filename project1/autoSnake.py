@@ -370,7 +370,7 @@ class World:
                         return
                 else:
                     problem=Problem(game.getFood(),game.getSnake(),game.getTail(),game.getHeight(),game.getWidth(),game)
-                    if heuristic==None:
+                    if search!=aStarSearch:
                         theSolution=search(problem)
                     else:
                         theSolution=search(problem,heuristic)
